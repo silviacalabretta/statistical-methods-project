@@ -53,6 +53,10 @@ Feature engineering:
 - GLM GAM non-linearities, regularized logistic regression, probit regression, trees, ...
 - significance test, p-values, evaluation
 
+Possible povs: predictions based on the line, predictions based on the people.
+
+Notice: False Positive is better than False Negative, we prefer to predict someone is goinc to cancel even if he won't rather than to no
+
 ## Comparison between models
 - AUC curve
 - ROC curve + AUC
