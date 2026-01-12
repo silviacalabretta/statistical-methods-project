@@ -6,34 +6,60 @@
 
 - Objective: Develop a model to predict if users will cancel their tickets. The response variable is Cancel (0 if not canceled, 1 if canceled).
 
-# General Instructions
-The final projects must be discussed during the winter session 2025/2026.
+Dataset variables:
+Created: The timestamp indicates the ticket registration time.
+CancelTime: The timestamp when the passenger canceled the ticket, if applicable.
+DepartureTime: The scheduled departure time for the trip.
+BillID: The unique identifier for the purchase transaction.
+TicketID: The unique identifier for the ticket.
+ReserveStatus: The payment status of the customer.
+UserID: The unique identifier for the user.
+Male: Indicates whether the ticket belongs to a male passenger or not.
+Price: The ticket price without any discounts.
+CouponDiscount: The discount applied by the passenger on the ticket.
+From: The origin of the trip.
+To: The destination of the trip.
+Domestic: Indicates whether the trip is domestic or international.
+VehicleType: Specifies details about the mode of transportation.
+VehicleClass: Indicates whether the vehicle is first class or not.
+Vehicle: Specifies the type of vehicle.
+Cancel: Indicates whether the ticket has been canceled or not.
+HashPassportNumber_p: Hashed version of the passport number.
+HashEmail: Hashed version of the email address.
+BuyerMobile : Hashed version of the buyer's mobile number.
+NationalCode : Hashed version of the national identification number.
+TripReason : The reason for the trip.
 
-The presentation should include the following:
 
-- a description of the project’s aim
+# Project structure
 
-- an exploratory data analysis, including a possible data-cleaning phase
+## Data exploration
+Feature engineering:
+- check if cancel column is congruent with missing cancel time
+- create another variable: set cancel time = departure datetime-cancel datetime and in case divide it in intervals based on the range
+- TripReason: turn it in 0,1 (it is Work or Int)
+- do all trains ha ìve null VehicleClass? 
 
-- selection, description, and possibly comparison of the most suitable statistical models
+- hypothesized important variables:
 
-- comments on results.
+- useless variables:
+  - BillID
+  - HashPassportNumber_p
+  - HashEmail
 
-For some data files, you will likely find some analyses on the net carried out by others. You can look at them for inspiration, but we ask you to find your original key to the analysis.
-Each presentation must last 20/25 minutes. All group members must be aware of all the project’s parts and take part in the presentation. The coherence of results across the project sections will be
-evaluated.
+- oversampling
 
-You are free to choose the kind of programming language and file extension to organize your presentation, e.g., slides, report. You have to upload on Moodle the script project and the report that will be presented
-the day before the exam.
+## Models
+- GLM GAM non-linearities, regularized logistic regression, probit regression, trees, ...
+- significance test, p-values, evaluation
 
-Students that did not participate in homework and/or partial tests, that have to pass an oral examination, have to send an email to professors to have assigned a final project.
-Operational Instructions:
+## Comparison between models
+- AUC curve
+- ROC curve + AUC
+- Precision / Recall
+- Confusion matrix
+  
+## Possible exploration
+- check if there is some user that is cancelling a lot, so that he is very prone to cancelling: use the NationalCode (not missing values)
+- check whether there is a correlation between price and correlations
 
-1. Free aggregation into groups, with a maximum of 4 members per group.
-
-2. Select the project on moodle: each dataset has its description and a link. Before starting the analysis, carefully read the description of the dataset and variables. All group members must select the same
-project. You are free to choose another dataset of your liking, subject to consultation with the lecturers.
-
-3. Register on esse3 for the desired session: all group members must register for the same session. Those registered for the session are warmly invited to listen to the presentations of the other groups registered for the same session.
-   
-4. Submit the presentation on Moodle before the session
