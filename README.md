@@ -28,7 +28,7 @@ HashPassportNumber_p: Hashed version of the passport number.
 HashEmail: Hashed version of the email address.
 BuyerMobile : Hashed version of the buyer's mobile number.
 NationalCode : Hashed version of the national identification number.
-TripReason : The reason for the trip.
+TripReason : The reason for the trip (1 = Work, 0 = Int).
 
 
 # Project structure
