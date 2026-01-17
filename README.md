@@ -22,8 +22,8 @@ Dataset variables:
 - To: The destination of the trip.
 - Domestic: Indicates whether the trip is domestic or international.
 - VehicleType: Specifies details about the mode of transportation.
-- VehicleClass: Indicates whether the vehicle is first class or not.
-- Vehicle: Specifies the type of vehicle.
+- VehicleClass: Indicates whether the vehicle is first class or not (False: 0, True: 1, 'Unknown': 2).
+- Vehicle: Specifies the type of vehicle ('Bus': 0, 'Train': 1, 'Plane': 2, 'InternationalPlane': 3).
 - Cancel: Indicates whether the ticket has been canceled or not.
 - HashPassportNumber_p: Hashed version of the passport number.
 - HashEmail: Hashed version of the email address.
