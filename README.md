@@ -48,7 +48,41 @@ Feature engineering:
   - HashPassportNumber_p
   - HashEmail
 
-- oversampling
+### Oversampling
+1. Class Weights: Instead of changing the data, you change the math. You tell the model: "Making a mistake on a Cancellation (Class 1) is 10x worse than making a mistake on a non-cancellation." Most scikit-learn models (Logistic Regression, Random Forest, SVM) have a built-in parameter for this.
+\[
+`model = LogisticRegression(class_weight='balanced')`
+\]
+2. Resampling (changing the data)
+- Undersampling: You randomly delete rows from the majority class (Not Canceled) until it matches the minority class.
+
+Pros: Fast training.
+
+Cons: You throw away valuable data (bad for small datasets).
+
+- Oversampling (SMOTE): You synthesize artificial new examples of the minority class.
+
+Pros: Keeps all data.
+
+Cons: Can introduce noise and overfitting.
+
+3. Change the Metric
+Never use "Accuracy" for imbalanced data. If 95% of users don't cancel, a dummy model has 95% accuracy.
+
+Use these instead:
+
+- F1-Score: The harmonic mean of Precision and Recall.
+
+- ROC-AUC: Measures how well the model separates the two classes.
+
+- Precision-Recall AUC: Often better than ROC for highly imbalanced datasets.
+
+
+**In our case:**
+
+Start with class_weight='balanced'. It is the simplest, requires no extra libraries, and doesn't destroy or fake any data. It usually gives a massive boost in detecting the minority class immediately.
+
+Combine it with the right metric. Focus on maximizing the F1-Score or Recall (if you care more about catching all cancellations, even if you flag some false alarms).
 
 ## Models
 - GLM GAM non-linearities, regularized logistic regression, probit regression, trees, ...
