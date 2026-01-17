@@ -39,7 +39,7 @@ Feature engineering:
 - check if cancel column is congruent with missing cancel time
 - create another variable: set cancel time = departure datetime-cancel datetime and in case divide it in intervals based on the range
 - TripReason: turn it in 0,1 (it is Work or Int)
-- do all trains ha ìve null VehicleClass? 
+- do all trains have null VehicleClass? 
 
 - hypothesized important variables:
 
