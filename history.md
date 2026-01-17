@@ -14,4 +14,4 @@
 - I also changed all the binary values to integers, so that plots and models work better (some were string, some were bool, now it's coherent)
 - Instead of CouponDiscount I made a variable with the percentage of the discount, which is more general for the models
 - From the DepartureTime which was deleted I rescued the moth of departure and the hour of departure, because I plotted the values and there were much more cancellations around the month of september and during the night hours, so they may be informative for the model (and then i deleted DepartureTime as it was alredy done
-- In /src/data.py I wrote a function that splits the dataset in training and test set, and manages the creation of the user history: if a useer only appear in the test set, its history is set to 0 by default.
+- In /src/data.py I wrote a function that splits the dataset in training and test set, and manages the creation of the user history: if a user only appear in the test set, we set User_Total_Tickets=0 and User_Cancel_Rate={average cancel rate in train set} (like a Bayesian prior).

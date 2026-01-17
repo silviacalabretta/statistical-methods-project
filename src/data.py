@@ -25,6 +25,8 @@ def time_based_train_test_split(
     # Calculate user statistics (only on training data)
     user_stats = train_df.groupby(id_col)[target_col].agg(['mean', 'count']).reset_index()
     user_stats.columns = [id_col, 'User_Cancel_Rate', 'User_Total_Tickets']
+    global_cancel_mean = train_df[target_col].mean()
+    print(f"Global Training Cancel Rate: {global_cancel_mean:.4f}")
     
     # Merge stats into Train and Test
     train_df = train_df.merge(user_stats, on=id_col, how='left')
@@ -32,9 +34,11 @@ def time_based_train_test_split(
     
     # Users in Test who never appeared in Train get 0 history
     new_users_count = test_df['User_Total_Tickets'].isna().sum()
-    print(f"Found {new_users_count} new users in Test set (setting their history to 0).")
+    print(f"Found {new_users_count} new users in Test set")
     
-    test_df['User_Cancel_Rate'] = test_df['User_Cancel_Rate'].fillna(0)
+    # Cancel rate = average cancel rate in train set (bayesian prior)
+    test_df['User_Cancel_Rate'] = test_df['User_Cancel_Rate'].fillna(global_cancel_mean)
+    # Total tickets = 0
     test_df['User_Total_Tickets'] = test_df['User_Total_Tickets'].fillna(0).astype(int)
     
     # Final Clean-up: drop the ID and the Date column
