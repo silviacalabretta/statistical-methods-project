@@ -1,1 +1,1 @@
-Male,Price,From,To,Domestic,VehicleType,VehicleClass,TripReason,Vehicle,Cancel,LeadTime_Days,Has_Discount,MonthDeparture,HourDeparture,User_Cancel_Rate,User_Total_Tickets
+Male,Price,From,To,Domestic,VehicleType,VehicleClass,TripReason,Cancel,LeadTime_Days,Has_Discount,MonthDeparture,HourDeparture,Vehicle_Plane,Vehicle_IntPlane,User_Cancel_Rate,User_Total_Tickets
