@@ -1,1 +1,5 @@
 pandas==2.3.3
+matplotlib
+seaborn
+numpy
+PyQt5==5.15.10
