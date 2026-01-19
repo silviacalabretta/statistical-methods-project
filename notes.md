@@ -42,18 +42,32 @@ Month 12: 1
 KILL month of departure
 Rename Price as LogPrice
 
-Varibles:
-- Male: not useful
-- Domestic: is imbalanced, so oversampling has to take care
+Varibles to drop:
+- Male: drop it
+- User_Total_ticket: drop it
+- Has_Discount: drop it because data is too imbalanced and there is only a 0.02% of difference between the two (created from CouponDiscount)
 - VehicleClass: drop it because there is not much difference between class 0 and class 1, and also missing values (trains) add correlations, which is hell, so it's better to drop this variable
+  
+Okay variables:
 - Tripreason: okay
 - HourDeparture: build models with and without and test if it makes a difference
+- Domestic: is imbalanced, so oversampling has to take care
 - Vehicle: merge Plane and IntPlane (merge in Vehicle, still save in another column the actual data)
-- User_Total_ticket: drop it
-- Has_Discount: drop it because data is too imbalanced and there is only a 0.02% of difference between the two
-
-Check correlation between not domestic tickets with international plain, and in case merge plane and IntPlane to remove correlation
-
-
-check User_cCancel_Rate on people with multiple tickets
 -LeadTime_Days: okay
+- From_Rate and To_Rate OR Route_Rate
+
+Check correlation between not domestic tickets with international plane, and in case merge plane and IntPlane to remove correlation
+
+check User_Cancel_Rate on people with multiple tickets
+
+
+
+
+TO DO:
+- delete randomly some data to decrease the cancellation rate in the month of september
+- change the splitting function, so that it is random
+- merge Vehicle_Plane and Vehicle_InternationalPlane
+Bus: 48960
+Train: 38441
+Plane: 12809
+IntPlane: 795
