@@ -60,13 +60,19 @@ Check correlation between not domestic tickets with international plane, and in 
 
 check User_Cancel_Rate on people with multiple tickets
 
-
-
+Tickets with departure in 2023: 6 total
+47604   2023-03-08 13:00:00
+50806   2023-03-07 18:05:00
+52333   2023-01-14 04:30:00
+74624   2023-01-18 22:35:00
+86086   2023-01-14 04:30:00
+95756   2023-01-14 10:35:00
+Tickets with creation in 2023: 0
+-> we basically only have data about 2022
 
 TO DO:
 - delete randomly some data to decrease the cancellation rate in the month of september
 - change the splitting function, so that it is random
-- merge Vehicle_Plane and Vehicle_InternationalPlane
 Bus: 48960
 Train: 38441
 Plane: 12809
