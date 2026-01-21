@@ -70,6 +70,8 @@ Tickets with departure in 2023: 6 total
 Tickets with creation in 2023: 0
 -> we basically only have data about 2022
 
+User_Total_Tickets range: [1, 91]
+
 TO DO:
 - delete randomly some data to decrease the cancellation rate in the month of september
 - change the splitting function, so that it is random
