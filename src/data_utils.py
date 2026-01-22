@@ -134,7 +134,7 @@ def downsample_feature(df, feature_col='MonthDeparture', target_col='Cancel',
     # Number of rows to delete to reach the target cancellation rate
     num_to_delete = int(original_target_count) - goal_target_count
     
-    print(f"--- Correction for category {category_value} ---")
+    print(f"--- Correction for {feature_col} category {category_value} ---")
     print(f"Target Rate: {goal_rate:.2%}")
     print(f"Current Rate: {category_data[target_col].mean():.2%}")
     
@@ -156,7 +156,7 @@ def downsample_feature(df, feature_col='MonthDeparture', target_col='Cancel',
         # Validation
         new_rate = df_mod[df_mod[feature_col] == category_value][target_col].mean()
         print(f"New Rate: {new_rate:.2%}")
-        print(f"Cancellation rate reduced by: {(original_target_rate - new_rate):.2%}")
+        print(f"Cancellation rate reduced by: {(original_target_rate - new_rate)*100:.2f} percentage points")
     else:
         print("No deletion needed (Current rate is already lower or equal to target).")
 

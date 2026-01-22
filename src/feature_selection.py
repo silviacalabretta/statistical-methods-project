@@ -76,6 +76,8 @@ data = downsample_feature(
 #     conditional_col='Vehicle' 
 # )
 
+data=data.drop(columns=['MonthDeparture'])
+
 
 # Binary Encoding
 data['TripReason'] = data['TripReason'].map({'Work': 1, 'Int': 0})
@@ -121,4 +123,5 @@ X_test.to_csv(os.path.join(output_dir, 'X_test.csv'), index=False)
 y_test.to_csv(os.path.join(output_dir, 'y_test.csv'), index=False)
 
 print(f"CSV files saved successfully to {output_dir}")
+print("\nX_train dataset info:")
 print(X_train.info())
