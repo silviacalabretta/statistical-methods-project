@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import os
+
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
@@ -8,7 +10,9 @@ from city_translation import city_map
 
 
 
-file_path = "../data/tickets_data.csv"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+file_path = os.path.join(script_dir, '..', 'data', 'tickets_data.csv')
 data = pd.read_csv(file_path)
 
 # City names translation 
@@ -59,6 +63,10 @@ data['LeadTime_Days'] = (data['DepartureTime'] - data['Created']).dt.total_secon
 data['MonthDeparture'] = data['DepartureTime'].dt.month
 data['HourDeparture'] = data['DepartureTime'].dt.hour
 
+data=data.drop(columns=['DepartureTime','Created', 'Price'])
+
+### ADD THE SEPTEMBER CLEANING
+
 
 # Split the whole dataframe. 'Cancel' is still inside train_df and test_df
 train_df, test_df = train_test_split(
@@ -78,3 +86,16 @@ y_train = train_df_encoded['Cancel']
 X_test = test_df_encoded.drop(columns=['Cancel'])
 y_test = test_df_encoded['Cancel']
 
+
+# Save datasets
+output_dir = os.path.join(script_dir, '..', 'data')
+
+os.makedirs(output_dir, exist_ok=True)
+
+X_train.to_csv(os.path.join(output_dir, 'X_train.csv'), index=False)
+y_train.to_csv(os.path.join(output_dir, 'y_train.csv'), index=False)
+X_test.to_csv(os.path.join(output_dir, 'X_test.csv'), index=False)
+y_test.to_csv(os.path.join(output_dir, 'y_test.csv'), index=False)
+
+print(f"CSV files saved successfully to {output_dir}")
+print(X_train.info())
