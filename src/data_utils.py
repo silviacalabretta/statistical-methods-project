@@ -95,7 +95,7 @@ def target_encoding(train_df, test_df, target_col = 'Cancel'):
     train_df = train_df.drop(columns=cols_to_drop)
     test_df = test_df.drop(columns=cols_to_drop)
 
-    return test_df, train_df
+    return train_df, test_df
 
 
 def downsample_feature(df, feature_col='MonthDeparture', target_col='Cancel', 
@@ -163,7 +163,7 @@ def downsample_feature(df, feature_col='MonthDeparture', target_col='Cancel',
     return df_mod
 
 
-def plot_september_correction(df_original, df_corrected, 
+def plot_feature_correction(df_original, df_corrected, 
                              feature_col='MonthDeparture', 
                              target_col='Cancel', 
                              conditional_col='Vehicle'):

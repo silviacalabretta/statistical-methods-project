@@ -5,7 +5,7 @@ import os
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
-from data_utils import target_encoding, downsample_feature, plot_september_correction
+from data_utils import target_encoding, downsample_feature, plot_feature_correction
 from city_translation import city_map
 
 
@@ -60,6 +60,8 @@ data=data.drop(columns=['DepartureTime','Created', 'Price'])
 
 
 # Data correction: downsampling september cancelled tickets
+# data_before = data.copy()     #uncomment for visualization
+
 data = downsample_feature(
     df=data, 
     feature_col='MonthDeparture', 
@@ -68,9 +70,9 @@ data = downsample_feature(
 )
 
 # # Optional visualization
-# plot_september_correction(
-#     df_original = data, # You'd need a copy of the original before downsampling to plot comparison
-#     df_corrected = df_corrected, 
+# plot_feature_correction(
+#     df_original = data_before, 
+#     df_corrected = data, 
 #     feature_col='MonthDeparture', 
 #     target_col='Cancel', 
 #     conditional_col='Vehicle' 
@@ -92,6 +94,8 @@ encoded_data.index = data.index
 data_encoded = data.drop(columns=['Vehicle'])
 data = pd.concat([data_encoded, encoded_data], axis=1)
 
+print("\nDataset info:")
+print(data.info())
 
 # Split the whole dataframe. 'Cancel' is still inside train_df and test_df
 train_df, test_df = train_test_split(
