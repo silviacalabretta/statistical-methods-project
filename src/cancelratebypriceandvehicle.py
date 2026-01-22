@@ -46,7 +46,7 @@ vehicle_labels = {0: 'Bus', 1: 'Train', 2: 'Plane', 3: 'Int Plane'}
 ax = df_plot.plot(kind='bar', stacked=True, color=colors, figsize=(12, 7), width=0.7)
 
 # Title and Labels
-plt.title('Cancellation Rate by Price Range\n(Breakdown by Vehicle Contribution)', fontsize=14)
+plt.title('Cancellation Rate by Price Range without september\n(Breakdown by Vehicle Contribution)', fontsize=14)
 plt.xlabel('Price Range (Log Scale)', fontsize=12)
 plt.ylabel('Percentage of Tickets Cancelled (%)', fontsize=12)
 plt.xticks(rotation=0)

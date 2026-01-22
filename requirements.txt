@@ -3,3 +3,4 @@ matplotlib
 seaborn
 numpy
 PyQt5==5.15.10
+scikit-learn
