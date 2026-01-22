@@ -3,13 +3,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import math
 
-# Carica il dataset (sostituisci 'nome_file.csv' con il percorso del tuo file)
+# load dataset
 df = pd.read_csv('./data/updated_data.csv')
 
-# Filtra i dati per il mese di settembre (colonna 'MonthDeparture')
+# filters data to get only september (column 'MonthDeparture')
 df_settembre = df[df['MonthDeparture'] == 9]
 
-# Funzione per categorizzare LeadTime_Days in settimane
+# cathegorize lead time days for september in order to save data
 print(df_settembre)
 def categorizza_settimane(days):
     if pd.isna(days):
@@ -19,18 +19,18 @@ def categorizza_settimane(days):
 
 df_settembre['LeadTime_Settimane'] = df_settembre['LeadTime_Days'].apply(categorizza_settimane)
 
-# Calcola il tasso di cancellazione per ogni categoria di LeadTime_Settimane
+# calculates cancellation rates for every category of LeadTime_Settimane
 tasso_cancellazione = df_settembre.groupby('LeadTime_Settimane')['Cancel'].agg(
     tasso_cancellazione=('mean')
 ).reset_index()
 
-# Ordina per tasso di cancellazione decrescente
+# order by decreasing cancellation rate
 tasso_cancellazione = tasso_cancellazione.sort_values(by='tasso_cancellazione', ascending=False)
 
-# Visualizza il risultato
+
 print(tasso_cancellazione)
 
-# Grafico a barre per visualizzare il tasso di cancellazione
+
 plt.figure(figsize=(10, 6))
 sns.barplot(
     x='LeadTime_Settimane',
