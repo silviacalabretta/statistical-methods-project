@@ -11,7 +11,7 @@ bins = [0, 11, 12, 13, 14, 15, 16, 17, float('inf')]
 labels = ['0-11', '11-12', '12-13', '13-14','14-15', '15-16', '16-17', '17+']
 
 # Crea una nuova colonna con i range di prezzo
-df['Price_Range'] = pd.cut(df['Price'], bins=bins, labels=labels, right=False)
+df['Price_Range'] = pd.cut(df['LogPrice'], bins=bins, labels=labels, right=False)
 
 # ... (loading and binning code remains the same) ...
 
