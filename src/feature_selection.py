@@ -5,7 +5,7 @@ import os
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
-from data_utils import target_encoding
+from data_utils import target_encoding, downsample_feature, plot_september_correction
 from city_translation import city_map
 
 
@@ -41,10 +41,46 @@ data = data.drop(columns=[
 
 
 
-# Encoding
-data['TripReason'] = data['TripReason'].map({'Work': 1, 'Int': 0})
+# Standardize values
 data['Vehicle'] = data['Vehicle'].replace('InternationalPlane', 'Plane')
 
+# Date features
+data['Created'] = pd.to_datetime(data['Created'])
+data['DepartureTime'] = pd.to_datetime(data['DepartureTime'])
+
+# Derived features
+data['LogPrice']=np.log(data['Price'])
+
+data['LeadTime_Days'] = (data['DepartureTime'] - data['Created']).dt.total_seconds() / 86400
+data['MonthDeparture'] = data['DepartureTime'].dt.month
+data['HourDeparture'] = data['DepartureTime'].dt.hour
+
+# Drop unused original columns
+data=data.drop(columns=['DepartureTime','Created', 'Price'])
+
+
+# Data correction: downsampling september cancelled tickets
+data = downsample_feature(
+    df=data, 
+    feature_col='MonthDeparture', 
+    target_col='Cancel',
+    category_value=9
+)
+
+# # Optional visualization
+# plot_september_correction(
+#     df_original = data, # You'd need a copy of the original before downsampling to plot comparison
+#     df_corrected = df_corrected, 
+#     feature_col='MonthDeparture', 
+#     target_col='Cancel', 
+#     conditional_col='Vehicle' 
+# )
+
+
+# Binary Encoding
+data['TripReason'] = data['TripReason'].map({'Work': 1, 'Int': 0})
+
+# One-Hot Encoding
 encoder = OneHotEncoder(sparse_output=False, dtype=int)
 encoded_array = encoder.fit_transform(data[['Vehicle']])
 
@@ -53,19 +89,6 @@ encoded_data = pd.DataFrame(encoded_array, columns=encoded_column)
 encoded_data.index = data.index
 data_encoded = data.drop(columns=['Vehicle'])
 data = pd.concat([data_encoded, encoded_data], axis=1)
-
-# Feature Engineering
-data['LogPrice']=np.log(data['Price'])
-
-data['Created'] = pd.to_datetime(data['Created'])
-data['DepartureTime'] = pd.to_datetime(data['DepartureTime'])
-data['LeadTime_Days'] = (data['DepartureTime'] - data['Created']).dt.total_seconds() / 86400
-data['MonthDeparture'] = data['DepartureTime'].dt.month
-data['HourDeparture'] = data['DepartureTime'].dt.hour
-
-data=data.drop(columns=['DepartureTime','Created', 'Price'])
-
-### ADD THE SEPTEMBER CLEANING
 
 
 # Split the whole dataframe. 'Cancel' is still inside train_df and test_df

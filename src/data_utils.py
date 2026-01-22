@@ -1,4 +1,9 @@
 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
 def get_smoothed_rate(df, group_col, target_col, weight, global_mean):
     
     # Calculate count and mean for each category
@@ -91,3 +96,142 @@ def target_encoding(train_df, test_df, target_col = 'Cancel'):
     test_df = test_df.drop(columns=cols_to_drop)
 
     return test_df, train_df
+
+
+def downsample_feature(df, feature_col='MonthDeparture', target_col='Cancel', 
+                                      category_value=9, random_seed=42):
+    """
+    Reduces the cancellation rate of a specific category to match the average 
+    rate of the rest of the year by randomly dropping cancelled tickets.
+    """
+
+    # Create a copy to avoid modifying the original dataframe inplace
+    df_mod = df.copy()
+    
+    # Get stats for the specific category
+    category_mask = df_mod[feature_col] == category_value
+    category_data = df_mod[category_mask]
+    original_target_rate = category_data[target_col].mean()
+    
+    if len(category_data) == 0:
+        print(f"No data found for {feature_col} category {category_value}. Returning original dataframe.")
+        return df_mod
+
+    # Current positive count in category_value (number of rows with 'Cancel'=1)
+    original_target_count = category_data[target_col].sum()
+    
+    # Calculate goal rate (average of all OTHER categories)
+    other_categories_mask = df_mod[feature_col] != category_value
+    goal_rate = df_mod[other_categories_mask][target_col].mean()
+    
+    # Calculate approximately how many to delete: 
+    # x = original_target_count - goal_rate * len(category_data)
+    # Final count of positive = Total * Goal Rate
+
+    # Cancellation rate the category value should have 
+    goal_target_count = int(goal_rate * len(category_data))
+
+    # Number of rows to delete to reach the target cancellation rate
+    num_to_delete = int(original_target_count) - goal_target_count
+    
+    print(f"--- Correction for category {category_value} ---")
+    print(f"Target Rate: {goal_rate:.2%}")
+    print(f"Current Rate: {category_data[target_col].mean():.2%}")
+    
+    if num_to_delete > 0:
+        print(f"Removing {num_to_delete} cancelled tickets to align rates...")
+        
+        # Set seed
+        np.random.seed(random_seed)
+        
+        # Identify candidates to drop (category == target AND Cancel == 1)
+        candidates = df_mod[category_mask & (df_mod[target_col] == 1)].index.tolist()
+        
+        # Random sample
+        indices_to_delete = np.random.choice(candidates, size=num_to_delete, replace=False)
+        
+        # Drop rows
+        df_mod = df_mod.drop(indices_to_delete).reset_index(drop=True)
+        
+        # Validation
+        new_rate = df_mod[df_mod[feature_col] == category_value][target_col].mean()
+        print(f"New Rate: {new_rate:.2%}")
+        print(f"Cancellation rate reduced by: {(original_target_rate - new_rate):.2%}")
+    else:
+        print("No deletion needed (Current rate is already lower or equal to target).")
+
+    return df_mod
+
+
+def plot_september_correction(df_original, df_corrected, 
+                             feature_col='MonthDeparture', 
+                             target_col='Cancel', 
+                             conditional_col='Vehicle'):
+    """
+    Plots a side-by-side comparison of cancellation rates per month/vehicle 
+    before and after the correction.
+    """
+    
+    # --- Helper to prepare data ---
+    def prepare_data(data):
+        months = sorted(data[feature_col].unique())
+        vehicles = sorted(data[conditional_col].unique())
+        result = {}
+        
+        for m in months:
+            result[m] = {}
+            m_data = data[data[feature_col] == m]
+            total = len(m_data)
+            if total > 0:
+                for v in vehicles:
+                    v_cancelled = m_data[(m_data[conditional_col] == v) & (m_data[target_col] == 1)].shape[0]
+                    result[m][v] = v_cancelled / total
+            else:
+                for v in vehicles:
+                    result[m][v] = 0
+        return pd.DataFrame(result).T, vehicles
+
+    # Prepare Data
+    data_before, vehicles = prepare_data(df_original)
+    data_after, _ = prepare_data(df_corrected)
+    
+    # Plotting
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    
+    # Colors (Bus/Train/Plane specific, fallback to generic if names differ)
+    color_map = {'Bus': '#e74c3c', 'Train': '#3498db', 'Plane': '#2ecc71', 'IntPlane': '#f39c12'}
+    # Fallback generator for unknown vehicle types
+    default_colors = plt.cm.tab10(np.linspace(0, 1, len(vehicles)))
+    
+    def plot_ax(ax, data, title):
+        x = np.arange(len(data.index))
+        bottom = np.zeros(len(data.index))
+        
+        for i, v in enumerate(vehicles):
+            if v in data.columns:
+                values = data[v].values
+                color = color_map.get(v, default_colors[i])
+                ax.bar(x, values, 0.6, bottom=bottom, label=v, color=color, alpha=0.9, edgecolor='white')
+                bottom += values
+        
+        ax.set_title(title, fontweight='bold')
+        ax.set_xlabel('Month')
+        ax.set_ylabel('Cancellation Rate')
+        ax.set_xticks(x)
+        ax.set_xticklabels(data.index)
+        ax.set_ylim(0, bottom.max() * 1.15)
+        ax.grid(axis='y', alpha=0.3, linestyle='--')
+        
+        # Add totals labels
+        for i, total in enumerate(bottom):
+            ax.text(i, total + 0.005, f'{total:.1%}', ha='center', va='bottom', fontsize=9)
+
+    plot_ax(axes[0], data_before, 'Before Correction')
+    plot_ax(axes[1], data_after, 'After Correction')
+    
+    # Single Legend
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, title='Vehicle', loc='upper right', bbox_to_anchor=(0.98, 0.9))
+    
+    plt.tight_layout()
+    plt.show()
