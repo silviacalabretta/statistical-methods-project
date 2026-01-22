@@ -235,3 +235,32 @@ def plot_feature_correction(df_original, df_corrected,
     
     plt.tight_layout()
     plt.show()
+
+
+def create_time_of_day_feature(df, hour_col='HourDeparture'):
+    """
+    Transforms numerical hour (0-23) into 4 categorical bins:
+    Morning, Afternoon, Evening, Night.
+    """
+    df = df.copy()
+    
+    # Logic: 
+    # Morning: 06:00 - 11:59
+    # Afternoon: 12:00 - 17:59
+    # Evening: 18:00 - 22:59
+    # Night: 23:00 - 05:59 (Handles the wrap-around)
+    
+    conditions = [
+        (df[hour_col].between(6, 11)),
+        (df[hour_col].between(12, 17)),
+        (df[hour_col].between(18, 22))
+    ]
+    choices = ['Morning', 'Afternoon', 'Evening']
+    
+    # Vectorized selection; default is 'Night' (covers 23, 0, 1, 2, 3, 4, 5)
+    df['TimeOfDay'] = np.select(conditions, choices, default='Night')
+    
+    # Drop original hour column to avoid collinearity
+    df = df.drop(columns=[hour_col])
+    
+    return df

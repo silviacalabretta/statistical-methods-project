@@ -5,7 +5,7 @@ import os
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
-from data_utils import target_encoding, downsample_feature, plot_feature_correction
+from data_utils import target_encoding, downsample_feature, create_time_of_day_feature, plot_feature_correction
 from city_translation import city_map
 
 
@@ -55,6 +55,8 @@ data['LeadTime_Days'] = (data['DepartureTime'] - data['Created']).dt.total_secon
 data['MonthDeparture'] = data['DepartureTime'].dt.month
 data['HourDeparture'] = data['DepartureTime'].dt.hour
 
+data = create_time_of_day_feature(data, hour_col='HourDeparture')
+
 # Drop unused original columns
 data=data.drop(columns=['DepartureTime','Created', 'Price'])
 
@@ -85,14 +87,16 @@ data=data.drop(columns=['MonthDeparture'])
 data['TripReason'] = data['TripReason'].map({'Work': 1, 'Int': 0})
 
 # One-Hot Encoding
-encoder = OneHotEncoder(sparse_output=False, dtype=int)
-encoded_array = encoder.fit_transform(data[['Vehicle']])
+cols_to_encode = ['Vehicle', 'TimeOfDay']
 
-encoded_column = encoder.get_feature_names_out(['Vehicle'])
-encoded_data = pd.DataFrame(encoded_array, columns=encoded_column)
-encoded_data.index = data.index
-data_encoded = data.drop(columns=['Vehicle'])
-data = pd.concat([data_encoded, encoded_data], axis=1)
+encoder = OneHotEncoder(sparse_output=False, dtype=int)
+encoded_array = encoder.fit_transform(data[cols_to_encode])
+encoded_column = encoder.get_feature_names_out(cols_to_encode)
+
+encoded_data = pd.DataFrame(encoded_array, columns=encoded_column, index=data.index)
+
+data = data.drop(columns=cols_to_encode)
+data = pd.concat([data, encoded_data], axis=1)
 
 print("\nDataset info:")
 print(data.info())
