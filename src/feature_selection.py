@@ -52,13 +52,14 @@ data['DepartureTime'] = pd.to_datetime(data['DepartureTime'])
 data['LogPrice']=np.log(data['Price'])
 
 data['LeadTime_Days'] = (data['DepartureTime'] - data['Created']).dt.total_seconds() / 86400
+data['LogLeadTime'] = np.log1p(data['LeadTime_Days'])
 data['MonthDeparture'] = data['DepartureTime'].dt.month
 data['HourDeparture'] = data['DepartureTime'].dt.hour
 
 data = create_time_of_day_feature(data, hour_col='HourDeparture')
 
 # Drop unused original columns
-data=data.drop(columns=['DepartureTime','Created', 'Price'])
+data=data.drop(columns=['DepartureTime','Created', 'LeadTime_Days', 'Price'])
 
 
 # Data correction: downsampling september cancelled tickets
