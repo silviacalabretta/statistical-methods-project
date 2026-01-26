@@ -79,3 +79,17 @@ Bus: 48960
 Train: 38441
 Plane: 12809
 IntPlane: 795
+
+
+We can use this guide in our presentation:
+COEFFICIENT:
+  - Positive (+): Higher value → INCREASES odds of cancellation
+  - Negative (-): Higher value → DECREASES odds of cancellation
+
+P-VALUE (Significance):
+  - p < 0.05 ✓: Feature is statistically significant and likely matters
+  - p ≥ 0.05 ✗: Feature might not matter
+
+ODDS RATIO:
+  - OR = 1.47: Each unit increase → 47% higher odds of cancellation
+  - OR = 0.85: Each unit increase → 15% lower odds of cancellation
