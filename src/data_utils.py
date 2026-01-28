@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
 
 
 def get_smoothed_rate(df, group_col, target_col, weight, global_mean):
@@ -263,4 +264,10 @@ def create_time_of_day_feature(df, hour_col='HourDeparture'):
     # Drop original hour column to avoid collinearity
     df = df.drop(columns=[hour_col])
     
+    return df
+
+
+def encode_col(df, col):
+    encoder = LabelEncoder()
+    df[f'{col}_Encoded'] = encoder.fit_transform(df[col])
     return df

@@ -2,10 +2,11 @@ import pandas as pd
 import numpy as np
 import os
 
+from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
-from data_utils import target_encoding, downsample_feature, create_time_of_day_feature, plot_feature_correction
+from data_utils import target_encoding, downsample_feature, create_time_of_day_feature, encode_col, plot_feature_correction
 from city_translation import city_map
 
 
@@ -87,20 +88,53 @@ data=data.drop(columns=['MonthDeparture'])
 # Binary Encoding
 data['TripReason'] = data['TripReason'].map({'Work': 1, 'Int': 0})
 
+# Label Encoding (Vehicle, TimeOfDay)
+data['Vehicle'] = data['Vehicle'].map({'Bus': 0, 'Train': 1, 'Plane': 2})
+data['TimeOfDay'] = data['TimeOfDay'].map({'Morning': 0, 'Afternoon': 1, 'Evening': 2, 'Night': 3})
+
 # One-Hot Encoding
-cols_to_encode = ['Vehicle', 'TimeOfDay']
+# cols_to_encode = ['Vehicle', 'TimeOfDay']
 
-encoder = OneHotEncoder(sparse_output=False, dtype=int)
-encoded_array = encoder.fit_transform(data[cols_to_encode])
-encoded_column = encoder.get_feature_names_out(cols_to_encode)
+# encoder = OneHotEncoder(sparse_output=False, dtype=int)
+# encoded_array = encoder.fit_transform(data[cols_to_encode])
+# encoded_column = encoder.get_feature_names_out(cols_to_encode)
 
-encoded_data = pd.DataFrame(encoded_array, columns=encoded_column, index=data.index)
+# encoded_data = pd.DataFrame(encoded_array, columns=encoded_column, index=data.index)
 
-data = data.drop(columns=cols_to_encode)
-data = pd.concat([data, encoded_data], axis=1)
+# data = data.drop(columns=cols_to_encode)
+# data = pd.concat([data, encoded_data], axis=1)
+
+
+# Label Encoding (From, To, Route)
+unique_cities = data['From'].tolist() + data['To'].tolist()
+
+# Create a set of unique cities and convert it back to a list
+unique_cities = list(set(unique_cities))
+
+# Create a LabelEncoder instance
+city_encoder = LabelEncoder()
+
+# Fit the encoder on the unique cities
+city_encoder.fit(unique_cities)
+
+# Transform the 'From' and 'To' columns in the training data
+data['From_Encoded'] = city_encoder.transform(data['From'])
+data['To_Encoded'] = city_encoder.transform(data['To'])
+
+# Fill missing values with -1
+data['From_Encoded'].fillna(-1, inplace=True)
+data['To_Encoded'].fillna(-1, inplace=True)
+
+# create and encode route
+data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
+data = encode_col(data, 'Route')
+
+#delete cols
+data = data.drop(columns=['From','To', 'Route'])
 
 print("\nDataset info:")
 print(data.info())
+
 
 # Split the whole dataframe. 'Cancel' is still inside train_df and test_df
 train_df, test_df = train_test_split(
@@ -111,14 +145,24 @@ train_df, test_df = train_test_split(
 )
 
 # Target encoding
-train_df_encoded, test_df_encoded = target_encoding(train_df, test_df, target_col='Cancel')
+# train_df_encoded, test_df_encoded = target_encoding(train_df, test_df, target_col='Cancel')
+
+# # Create the final arrays for the model
+# X_train = train_df_encoded.drop(columns=['Cancel'])
+# y_train = train_df_encoded['Cancel']
+
+# X_test = test_df_encoded.drop(columns=['Cancel'])
+# y_test = test_df_encoded['Cancel']
+
+
 
 # Create the final arrays for the model
-X_train = train_df_encoded.drop(columns=['Cancel'])
-y_train = train_df_encoded['Cancel']
+X_train = train_df.drop(columns=['Cancel'])
+y_train = train_df['Cancel']
 
-X_test = test_df_encoded.drop(columns=['Cancel'])
-y_test = test_df_encoded['Cancel']
+X_test = test_df.drop(columns=['Cancel'])
+y_test = test_df['Cancel']
+
 
 
 # Save datasets
