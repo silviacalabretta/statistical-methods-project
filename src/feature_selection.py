@@ -130,7 +130,7 @@ data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
 data = encode_col(data, 'Route')
 
 #delete cols
-data = data.drop(columns=['From','To', 'Route'])
+data = data.drop(columns=['From','To', 'Route', 'NationalCode'])
 
 print("\nDataset info:")
 print(data.info())
