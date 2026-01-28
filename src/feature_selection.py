@@ -2,11 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 
-from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 
-from data_utils import target_encoding, downsample_feature, create_time_of_day_feature, encode_col, plot_feature_correction
+from data_utils import target_encoding, downsample_feature, create_time_of_day_feature, plot_feature_correction
 from city_translation import city_map
 
 
@@ -63,28 +62,6 @@ data = create_time_of_day_feature(data, hour_col='HourDeparture')
 data=data.drop(columns=['DepartureTime','Created', 'LeadTime_Days', 'Price'])
 
 
-# Data correction: downsampling september cancelled tickets
-# data_before = data.copy()     #uncomment for visualization
-
-data = downsample_feature(
-    df=data, 
-    feature_col='MonthDeparture', 
-    target_col='Cancel',
-    category_value=9
-)
-
-# # Optional visualization
-# plot_feature_correction(
-#     df_original = data_before, 
-#     df_corrected = data, 
-#     feature_col='MonthDeparture', 
-#     target_col='Cancel', 
-#     conditional_col='Vehicle' 
-# )
-
-data=data.drop(columns=['MonthDeparture'])
-
-
 # Binary Encoding
 data['TripReason'] = data['TripReason'].map({'Work': 1, 'Int': 0})
 
@@ -105,44 +82,81 @@ data['TimeOfDay'] = data['TimeOfDay'].map({'Morning': 0, 'Afternoon': 1, 'Evenin
 # data = pd.concat([data, encoded_data], axis=1)
 
 
-# Label Encoding (From, To, Route)
-unique_cities = data['From'].tolist() + data['To'].tolist()
 
-# Create a set of unique cities and convert it back to a list
-unique_cities = list(set(unique_cities))
-
-# Create a LabelEncoder instance
-city_encoder = LabelEncoder()
-
-# Fit the encoder on the unique cities
-city_encoder.fit(unique_cities)
-
-# Transform the 'From' and 'To' columns in the training data
-data['From_Encoded'] = city_encoder.transform(data['From'])
-data['To_Encoded'] = city_encoder.transform(data['To'])
-
-# Fill missing values with -1
-data['From_Encoded'] = data['From_Encoded'].fillna(-1)
-data['To_Encoded'] = data['To_Encoded'].fillna(-1)
-
-# create and encode route
-data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
-data = encode_col(data, 'Route')
-
-#delete cols
-data = data.drop(columns=['From','To', 'Route', 'NationalCode'])
-
-print("\nDataset info:")
-print(data.info())
-
-
-# Split the whole dataframe. 'Cancel' is still inside train_df and test_df
 train_df, test_df = train_test_split(
     data, 
     test_size=0.2, 
     random_state=19, 
     stratify=data['Cancel']
 )
+
+
+# Data correction: downsampling september cancelled tickets
+# train_before = train_df.copy()     #uncomment for visualization
+
+train_df = downsample_feature(
+    df=train_df, 
+    feature_col='MonthDeparture', 
+    target_col='Cancel',
+    category_value=9
+)
+
+# # Optional visualization
+# plot_feature_correction(
+#     df_original = train_before, 
+#     df_corrected = train_df, 
+#     feature_col='MonthDeparture', 
+#     target_col='Cancel', 
+#     conditional_col='Vehicle' 
+# )
+
+train_df=train_df.drop(columns=['MonthDeparture'])
+test_df=test_df.drop(columns=['MonthDeparture'])
+
+
+### Label Encoding (From, To, Route)
+
+# Create a set of unique cities ONLY from Train
+train_cities = set(train_df['From'].tolist() + train_df['To'].tolist())
+
+# Create a manual mapping (City Name -> ID)
+city_mapping = {city: idx for idx, city in enumerate(train_cities)}
+
+# Apply to Train (Direct map)
+train_df['From_Encoded'] = train_df['From'].map(city_mapping)
+train_df['To_Encoded'] = train_df['To'].map(city_mapping)
+
+# Apply to Test using .map() and fillna(-1)
+# This handles unknown cities automatically by turning it into -1
+test_df['From_Encoded'] = test_df['From'].map(city_mapping).fillna(-1).astype(int)
+test_df['To_Encoded'] = test_df['To'].map(city_mapping).fillna(-1).astype(int)
+
+
+# create and encode route
+# data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
+# data = encode_col(data, 'Route')
+
+# Fit on train
+train_df['Route'] = train_df['From'].astype(str) + ' to ' + train_df['To'].astype(str)
+test_df['Route'] = test_df['From'].astype(str) + ' to ' + test_df['To'].astype(str)
+
+# Create mapping from training data
+route_mapping = {route: idx for idx, route in enumerate(train_df['Route'].unique())}
+
+# Apply to train
+train_df['Route_Encoded'] = train_df['Route'].map(route_mapping)
+
+# Apply to test, filling unseen routes with -1
+test_df['Route_Encoded'] = test_df['Route'].map(route_mapping).fillna(-1).astype(int)
+
+
+#delete cols
+train_df = train_df.drop(columns=['From','To', 'Route', 'NationalCode'])
+test_df = test_df.drop(columns=['From','To', 'Route', 'NationalCode'])
+
+print("\nDataset info:")
+print(data.info())
+
 
 # Target encoding
 # train_df_encoded, test_df_encoded = target_encoding(train_df, test_df, target_col='Cancel')
@@ -170,7 +184,7 @@ output_dir = os.path.join(script_dir, '..', 'data')
 
 os.makedirs(output_dir, exist_ok=True)
 
-data.to_csv(os.path.join(output_dir, 'updated_data.csv'), index=False)
+# data.to_csv(os.path.join(output_dir, 'updated_data.csv'), index=False)
 X_train.to_csv(os.path.join(output_dir, 'X_train.csv'), index=False)
 y_train.to_csv(os.path.join(output_dir, 'y_train.csv'), index=False)
 X_test.to_csv(os.path.join(output_dir, 'X_test.csv'), index=False)
