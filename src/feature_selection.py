@@ -122,8 +122,8 @@ data['From_Encoded'] = city_encoder.transform(data['From'])
 data['To_Encoded'] = city_encoder.transform(data['To'])
 
 # Fill missing values with -1
-data['From_Encoded'].fillna(-1, inplace=True)
-data['To_Encoded'].fillna(-1, inplace=True)
+data['From_Encoded'] = data['From_Encoded'].fillna(-1)
+data['To_Encoded'] = data['To_Encoded'].fillna(-1)
 
 # create and encode route
 data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
@@ -170,11 +170,12 @@ output_dir = os.path.join(script_dir, '..', 'data')
 
 os.makedirs(output_dir, exist_ok=True)
 
+data.to_csv(os.path.join(output_dir, 'updated_data.csv'), index=False)
 X_train.to_csv(os.path.join(output_dir, 'X_train.csv'), index=False)
 y_train.to_csv(os.path.join(output_dir, 'y_train.csv'), index=False)
 X_test.to_csv(os.path.join(output_dir, 'X_test.csv'), index=False)
 y_test.to_csv(os.path.join(output_dir, 'y_test.csv'), index=False)
 
-print(f"CSV files saved successfully to {output_dir}")
+print(f"\nCSV files saved successfully to {output_dir}")
 print("\nX_train dataset info:")
 print(X_train.info())
