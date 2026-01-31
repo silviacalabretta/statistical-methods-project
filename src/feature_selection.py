@@ -50,6 +50,7 @@ data['DepartureTime'] = pd.to_datetime(data['DepartureTime'])
 
 # Derived features
 data['LogPrice']=np.log(data['Price'])
+data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
 
 data['LeadTime_Days'] = (data['DepartureTime'] - data['Created']).dt.total_seconds() / 86400
 data['LogLeadTime'] = np.log1p(data['LeadTime_Days'])
@@ -81,8 +82,11 @@ data['TimeOfDay'] = data['TimeOfDay'].map({'Morning': 0, 'Afternoon': 1, 'Evenin
 # data = data.drop(columns=cols_to_encode)
 # data = pd.concat([data, encoded_data], axis=1)
 
+print("\nDataset info:")
+print(data.info())
 
 
+# Split train and test set
 train_df, test_df = train_test_split(
     data, 
     test_size=0.2, 
@@ -114,59 +118,42 @@ train_df=train_df.drop(columns=['MonthDeparture'])
 test_df=test_df.drop(columns=['MonthDeparture'])
 
 
-### Label Encoding (From, To, Route)
 
-# Create a set of unique cities ONLY from Train
+train_df_rates = train_df.copy()
+test_df_rates = test_df.copy()
+
+
+### Dataset 1: label encoding (From, To, Route)
+
+# set of unique cities ONLY from Train
 train_cities = set(train_df['From'].tolist() + train_df['To'].tolist())
 
-# Create a manual mapping (City Name -> ID)
+# manual mapping (City Name -> ID)
 city_mapping = {city: idx for idx, city in enumerate(train_cities)}
 
-# Apply to Train (Direct map)
+# apply to Train (direct map)
 train_df['From_Encoded'] = train_df['From'].map(city_mapping)
 train_df['To_Encoded'] = train_df['To'].map(city_mapping)
 
-# Apply to Test using .map() and fillna(-1)
-# This handles unknown cities automatically by turning it into -1
+# apply to test using .map() and fillna(-1) (handles unknown cities -> -1)
 test_df['From_Encoded'] = test_df['From'].map(city_mapping).fillna(-1).astype(int)
 test_df['To_Encoded'] = test_df['To'].map(city_mapping).fillna(-1).astype(int)
 
 
-# create and encode route
-# data['Route'] = data['From'].astype(str) + ' to ' + data['To'].astype(str)
-# data = encode_col(data, 'Route')
-
-# Fit on train
-train_df['Route'] = train_df['From'].astype(str) + ' to ' + train_df['To'].astype(str)
-test_df['Route'] = test_df['From'].astype(str) + ' to ' + test_df['To'].astype(str)
-
-# Create mapping from training data
+# Route, same encoding
 route_mapping = {route: idx for idx, route in enumerate(train_df['Route'].unique())}
 
-# Apply to train
 train_df['Route_Encoded'] = train_df['Route'].map(route_mapping)
 
-# Apply to test, filling unseen routes with -1
 test_df['Route_Encoded'] = test_df['Route'].map(route_mapping).fillna(-1).astype(int)
-
 
 #delete cols
 train_df = train_df.drop(columns=['From','To', 'Route', 'NationalCode'])
 test_df = test_df.drop(columns=['From','To', 'Route', 'NationalCode'])
 
-print("\nDataset info:")
-print(data.info())
 
-
-# Target encoding
-# train_df_encoded, test_df_encoded = target_encoding(train_df, test_df, target_col='Cancel')
-
-# # Create the final arrays for the model
-# X_train = train_df_encoded.drop(columns=['Cancel'])
-# y_train = train_df_encoded['Cancel']
-
-# X_test = test_df_encoded.drop(columns=['Cancel'])
-# y_test = test_df_encoded['Cancel']
+### Dataset 2: target encoding
+train_df_rates, test_df_rates = target_encoding(train_df_rates, test_df_rates, target_col='Cancel')
 
 
 
@@ -178,6 +165,13 @@ X_test = test_df.drop(columns=['Cancel'])
 y_test = test_df['Cancel']
 
 
+X_train_rates = train_df_rates.drop(columns=['Cancel'])
+y_train_rates = train_df_rates['Cancel']
+
+X_test_rates = test_df_rates.drop(columns=['Cancel'])
+y_test_rates = test_df_rates['Cancel']
+
+
 
 # Save datasets
 output_dir = os.path.join(script_dir, '..', 'data')
@@ -185,11 +179,22 @@ output_dir = os.path.join(script_dir, '..', 'data')
 os.makedirs(output_dir, exist_ok=True)
 
 # data.to_csv(os.path.join(output_dir, 'updated_data.csv'), index=False)
+
+# Dataset 1
 X_train.to_csv(os.path.join(output_dir, 'X_train.csv'), index=False)
 y_train.to_csv(os.path.join(output_dir, 'y_train.csv'), index=False)
 X_test.to_csv(os.path.join(output_dir, 'X_test.csv'), index=False)
 y_test.to_csv(os.path.join(output_dir, 'y_test.csv'), index=False)
 
+# Dataset 2
+X_train_rates.to_csv(os.path.join(output_dir, 'X_train_rates.csv'), index=False)
+y_train_rates.to_csv(os.path.join(output_dir, 'y_train_rates.csv'), index=False)
+X_test_rates.to_csv(os.path.join(output_dir, 'X_test_rates.csv'), index=False)
+y_test_rates.to_csv(os.path.join(output_dir, 'y_test_rates.csv'), index=False)
+
 print(f"\nCSV files saved successfully to {output_dir}")
 print("\nX_train dataset info:")
 print(X_train.info())
+
+print("\nX_train_rates dataset info:")
+print(X_train_rates.info())
