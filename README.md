@@ -60,27 +60,27 @@ statistical-methods-project/
 
 ## Project Development 
 
-### 1. Data Exploration & Feature Engineering
+### 1. Data exploration & feature engineering
 
 We performed extensive Exploratory Data Analysis (EDA) to understand the variables and prepare the data for modeling.
 
-* **Variable Analysis.** Enforced domain constraints on variables and examined distributions.
-* **Effectless variables.** Remove the following variables:
+**Variable analysis.** Enforced domain constraints on variables and examined distributions.
+**Effectless variables.** Remove the following variables:
 - `HashPassportNumber_p`, `UserID`, `HashEmail`, `BillID`, `BuyerMobile`, `TicketID`: identification variables, not useful to the prediction of the cancellation probability;
 - `CancelTime`: contains data only about the cancelled tickets, if we would add this variable to the model we wold have target leakage
 - `VehicleType`: there are too many categories in this variable, it's not possible to retrieve any information about cancellation
-* **Target Leakage.**
+**Target leakage.**
 - `CancelTime`: contains data only about the cancelled tickets.
 - `ReserveStatus`: we don't have information about the categories meaning and some categories have high cancellation rates, while others have 0%.
-* **Correlation check.** 
-* - `InternationalPlane` and `Domestic`=False: we merged the categories `InternationalPlane` and `Plane` under the `Vehicle` feature.
+**Correlation check.** 
+* `InternationalPlane` and `Domestic`=False: we merged the categories `InternationalPlane` and `Plane` under the `Vehicle` feature.
 - `Vehicle`=Train and `VehicleClass` missing: we removed `VehicleClass` because not much informative.
-* **Feature Engineering:**
+**Feature engineering:**
 - `LeadTime_Days` by calculating the difference between `DepartureTime` and `CancelTime`
 - `TimeOfDay`: departure hour of the ticket, binned in Morning, Afternoon, Evening and Night.
 - `Route`: traveling path, combination of `From` and `To`.
 - `PercentageDiscount`.
-* **Target Encoding.** Created the new values `UserRate`, `From_Rate`, `To_Rate`, `Route_Rate` value, using Leave-One-Out Smoothed Rate on training set and classic Smoothed Rate on test set.
+**Target encoding.** Created the new values `UserRate`, `From_Rate`, `To_Rate`, `Route_Rate` value, using Leave-One-Out Smoothed Rate on training set and classic Smoothed Rate on test set.
 
 
 #### Final Dataset Variables
@@ -99,28 +99,28 @@ We performed extensive Exploratory Data Analysis (EDA) to understand the variabl
 | `Route_Encoded` | The travel path of the trip |
 
 
-### 2. Handling Imbalanced Data
+### 2. Handling imbalanced data
 
 Since cancellations are the minority class ($15.2\%$), we implemented strategies to handle class imbalance:
 
-* **Class Weights:** Applied `class_weight='balanced'` in models (e.g., Logistic Regression) to penalize misclassifying the minority class.
-* **Resampling Techniques:** Considered undersampling and SMOTE (oversampling) to synthesize minority samples.
-* **Evaluation Metrics:** Shifted focus from simple Accuracy to **F1-Score**, **Precision/Recall**, and **ROC-AUC** to better evaluate performance on the minority class.
+* **Class weights:** Applied `class_weight='balanced'` in models (e.g., Logistic Regression) to penalize misclassifying the minority class.
+* **Resampling techniques:** Considered undersampling and SMOTE (oversampling) to synthesize minority samples.
+* **Evaluation metrics:** Shifted focus from simple Accuracy to **F1-Score**, **Precision/Recall**, and **ROC-AUC** to better evaluate performance on the minority class.
 
-### 3. Statistical Modeling
+### 3. Statistical modeling
 
 We explored various statistical and machine learning models to identify the best predictor:
 
 * **GLM:** Generalized Linear Models and Generalized Additive Models for non-linear relationships.
-* **Regularized Regression:** Logistic Regression with L1/L2 regularization.
-* **Tree-based Models:** Random Forests.
+* **Regularized regression:** Logistic Regression with L1/L2 regularization.
+* **Tree-based models:** Random Forests.
 
-### 4. Model Evaluation
+### 4. Model evaluation
 
 Models were compared using:
 
 * **ROC Curve & AUC:** To measure separation capability.
-* **Confusion Matrix:** To visualize False Positives vs. False Negatives (prioritizing recall to capture cancellations).
+* **Confusion matrix:** To visualize False Positives vs. False Negatives (prioritizing recall to capture cancellations).
 
 ## Installation and Usage
 
