@@ -1,10 +1,21 @@
-# M - ‘Travel_ticket_cancellation’ Dataset
+# Statistical Methods Project: Travel Ticket Cancellation Prediction
 
-- Source: https://www.kaggle.com/datasets/pkdarabi/classification-of-travel-purpose
+## Project Overview
 
-- Description: Every cancellation results in a fine for the ticket registration website by the airline. It is crucial to identify tickets likely to be canceled to manage cancellation risk effectively.
+This project focuses on the **'Travel_ticket_cancellation'** dataset. The primary objective is to develop a statistical model to predict whether a passenger will cancel their ticket. 
 
-- Objective: Develop a model to predict if users will cancel their tickets. The response variable is Cancel (0 if not canceled, 1 if canceled).
+Identifying potential cancellations is crucial for risk management, as every cancellation results in a fine for the ticket registration website from the airline.
+
+
+## Dataset
+
+* **Source:** [Kaggle - Classification of Travel Purpose](https://www.kaggle.com/datasets/pkdarabi/classification-of-travel-purpose)
+
+* **Goal:** Binary Classification (Target: `Cancel` — 0 if not canceled, 1 if canceled).
+
+* **Description:** Every cancellation results in a fine for the ticket registration website by the airline. It is crucial to identify tickets likely to be canceled to manage cancellation risk effectively.
+
+* **Objective:** Develop a model to predict if users will cancel their tickets. The response variable is Cancel (0 if not canceled, 1 if canceled).
 
 Dataset variables:
 
@@ -32,73 +43,120 @@ Dataset variables:
 - TripReason : The reason for the trip (1 = Work, 0 = Int).
 
 
-# Project structure
+## Repository Structure
 
-## Data exploration
-Feature engineering:
-- check if cancel column is congruent with missing cancel time
-- create another variable: set cancel time = departure datetime-cancel datetime and in case divide it in intervals based on the range
-- TripReason: turn it in 0,1 (it is Work or Int)
-- do all trains have null VehicleClass? 
+The project is organized into the following directories to separate data, code, and results:
 
-- hypothesized important variables:
+```text
+statistical-methods-project/
+├── data/                # Dataset files (raw and processed)
+├── notebooks/           # Jupyter Notebooks for EDA and modeling
+├── plots/               # Generated figures (barplots, distributions, etc.)
+├── src/                 # Source code for feature selection and helper functions
+├── requirements.txt     # Python dependencies
+└── README.md            # Project documentation
 
-- useless variables:
-  - BillID
-  - HashPassportNumber_p
-  - HashEmail
+```
 
-### Oversampling
-1. Class Weights: Instead of changing the data, you change the math. You tell the model: "Making a mistake on a Cancellation (Class 1) is 10x worse than making a mistake on a non-cancellation." Most scikit-learn models (Logistic Regression, Random Forest, SVM) have a built-in parameter for this.
-\[
-`model = LogisticRegression(class_weight='balanced')`
-\]
-2. Resampling (changing the data)
-- Undersampling: You randomly delete rows from the majority class (Not Canceled) until it matches the minority class.
+## Project Development 
 
-Pros: Fast training.
+### 1. Data Exploration & Feature Engineering
 
-Cons: You throw away valuable data (bad for small datasets).
+We performed extensive Exploratory Data Analysis (EDA) to understand the variables and prepare the data for modeling.
 
-- Oversampling (SMOTE): You synthesize artificial new examples of the minority class.
-
-Pros: Keeps all data.
-
-Cons: Can introduce noise and overfitting.
-
-3. Change the Metric
-Never use "Accuracy" for imbalanced data. If 95% of users don't cancel, a dummy model has 95% accuracy.
-
-Use these instead:
-
-- F1-Score: The harmonic mean of Precision and Recall.
-
-- ROC-AUC: Measures how well the model separates the two classes.
-
-- Precision-Recall AUC: Often better than ROC for highly imbalanced datasets.
+* **Variable Analysis.** Enforced domain constraints on variables and examined distributions.
+* **Effectless variables.** Remove the following variables:
+- `HashPassportNumber_p`, `UserID`, `HashEmail`, `BillID`, `BuyerMobile`, `TicketID`: identification variables, not useful to the prediction of the cancellation probability;
+- `CancelTime`: contains data only about the cancelled tickets, if we would add this variable to the model we wold have target leakage
+- `VehicleType`: there are too many categories in this variable, it's not possible to retrieve any information about cancellation
+* **Target Leakage.**
+- `CancelTime`: contains data only about the cancelled tickets.
+- `ReserveStatus`: we don't have information about the categories meaning and some categories have high cancellation rates, while others have 0%.
+* **Correlation check.** 
+* - `InternationalPlane` and `Domestic`=False: we merged the categories `InternationalPlane` and `Plane` under the `Vehicle` feature.
+- `Vehicle`=Train and `VehicleClass` missing: we removed `VehicleClass` because not much informative.
+* **Feature Engineering:**
+- `LeadTime_Days` by calculating the difference between `DepartureTime` and `CancelTime`
+- `TimeOfDay`: departure hour of the ticket, binned in Morning, Afternoon, Evening and Night.
+- `Route`: traveling path, combination of `From` and `To`.
+- `PercentageDiscount`.
+* **Target Encoding.** Created the new values `UserRate`, `From_Rate`, `To_Rate`, `Route_Rate` value, using Leave-One-Out Smoothed Rate on training set and classic Smoothed Rate on test set.
 
 
-**In our case:**
+#### Final Dataset Variables
 
-Start with class_weight='balanced'. It is the simplest, requires no extra libraries, and doesn't destroy or fake any data. It usually gives a massive boost in detecting the minority class immediately.
+| Variable | Description |
+| --- | --- |
+| `Cancel` | **Target Variable** (0 = No, 1 = Yes) |
+| `LogPrice` | Log of ticket price (excluding discount) |
+| `LogLeadTime` | Log of advance days the ticket was booked |
+| `TimeOfDay` | Hour of departure binned in Morning, Afternoon, Evening,Night |
+| `TripReason` | Reason for trip (Work vs Int) |
+| `Domestic` | Whether the trip is domestic or international |
+| `Vehicle` | Travle vehicle, Bus, Train or Plane |
+| `From_Encoded` | The origin of the trip |
+| `To_Encoded` | The destination of the trip |
+| `Route_Encoded` | The travel path of the trip |
 
-Combine it with the right metric. Focus on maximizing the F1-Score or Recall (if you care more about catching all cancellations, even if you flag some false alarms).
 
-## Models
-- GLM GAM non-linearities, regularized logistic regression, probit regression, trees, ...
-- significance test, p-values, evaluation
+### 2. Handling Imbalanced Data
 
-Possible povs: predictions based on the line, predictions based on the people.
+Since cancellations are the minority class ($15.2\%$), we implemented strategies to handle class imbalance:
 
-Notice: False Positive is better than False Negative, we prefer to predict someone is goinc to cancel even if he won't rather than to no
+* **Class Weights:** Applied `class_weight='balanced'` in models (e.g., Logistic Regression) to penalize misclassifying the minority class.
+* **Resampling Techniques:** Considered undersampling and SMOTE (oversampling) to synthesize minority samples.
+* **Evaluation Metrics:** Shifted focus from simple Accuracy to **F1-Score**, **Precision/Recall**, and **ROC-AUC** to better evaluate performance on the minority class.
 
-## Comparison between models
-- AUC curve
-- ROC curve + AUC
-- Precision / Recall
-- Confusion matrix
-  
-## Possible exploration
-- check if there is some user that is cancelling a lot, so that he is very prone to cancelling: use the NationalCode (not missing values)
-- check whether there is a correlation between price and correlations
+### 3. Statistical Modeling
 
+We explored various statistical and machine learning models to identify the best predictor:
+
+* **GLM:** Generalized Linear Models and Generalized Additive Models for non-linear relationships.
+* **Regularized Regression:** Logistic Regression with L1/L2 regularization.
+* **Tree-based Models:** Random Forests.
+
+### 4. Model Evaluation
+
+Models were compared using:
+
+* **ROC Curve & AUC:** To measure separation capability.
+* **Confusion Matrix:** To visualize False Positives vs. False Negatives (prioritizing recall to capture cancellations).
+
+## Installation and Usage
+
+To replicate this analysis on your local machine:
+
+1. **Clone the repository:**
+```bash
+git clone [https://github.com/silviacalabretta/statistical-methods-project.git](https://github.com/silviacalabretta/statistical-methods-project.git)
+cd statistical-methods-project
+
+```
+
+
+2. **Install dependencies:**
+Ensure you have Python installed, then run:
+```bash
+pip install -r requirements.txt
+
+```
+
+
+3. **Run the Notebooks:**
+Launch Jupyter Lab or Notebook to view the analysis:
+```bash
+jupyter notebook notebooks/
+
+```
+
+
+
+
+## ✍️ Authors
+
+* **Silvia Calabretta**
+* *[Add other team members here]*
+
+```
+
+```
