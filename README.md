@@ -88,7 +88,7 @@ We performed extensive Exploratory Data Analysis (EDA) to understand the variabl
 **Target encoding.** Created the new values `UserRate`, `From_Rate`, `To_Rate`, `Route_Rate` value, using Leave-One-Out Smoothed Rate on training set and classic Smoothed Rate on test set.
 
 
-#### Final Dataset Variables
+#### Final dataset variables
 
 | Variable | Description |
 | --- | --- |
@@ -151,17 +151,5 @@ pip install -r requirements.txt
 Launch Jupyter Lab or Notebook to view the analysis:
 ```bash
 jupyter notebook notebooks/
-
-```
-
-
-
-
-## ✍️ Authors
-
-* **Silvia Calabretta**
-* *[Add other team members here]*
-
-```
 
 ```
