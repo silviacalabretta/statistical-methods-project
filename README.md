@@ -133,7 +133,7 @@ To replicate this analysis on your local machine:
 
 1. **Clone the repository:**
 ```bash
-git clone [https://github.com/silviacalabretta/statistical-methods-project.git](https://github.com/silviacalabretta/statistical-methods-project.git)
+git clone https://github.com/silviacalabretta/statistical-methods-project.git
 cd statistical-methods-project
 
 ```
