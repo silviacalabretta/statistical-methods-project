@@ -65,21 +65,26 @@ statistical-methods-project/
 We performed extensive Exploratory Data Analysis (EDA) to understand the variables and prepare the data for modeling.
 
 **Variable analysis.** Enforced domain constraints on variables and examined distributions.
+
 **Effectless variables.** Remove the following variables:
 - `HashPassportNumber_p`, `UserID`, `HashEmail`, `BillID`, `BuyerMobile`, `TicketID`: identification variables, not useful to the prediction of the cancellation probability;
-- `CancelTime`: contains data only about the cancelled tickets, if we would add this variable to the model we wold have target leakage
-- `VehicleType`: there are too many categories in this variable, it's not possible to retrieve any information about cancellation
+- `CancelTime`: contains data only about the cancelled tickets, if we would add this variable to the model we wold have target leakage.
+- `VehicleType`: there are too many categories in this variable, it's not possible to retrieve any information about cancellation.
+
 **Target leakage.**
 - `CancelTime`: contains data only about the cancelled tickets.
 - `ReserveStatus`: we don't have information about the categories meaning and some categories have high cancellation rates, while others have 0%.
+
 **Correlation check.** 
 * `InternationalPlane` and `Domestic`=False: we merged the categories `InternationalPlane` and `Plane` under the `Vehicle` feature.
 - `Vehicle`=Train and `VehicleClass` missing: we removed `VehicleClass` because not much informative.
+
 **Feature engineering:**
 - `LeadTime_Days` by calculating the difference between `DepartureTime` and `CancelTime`
 - `TimeOfDay`: departure hour of the ticket, binned in Morning, Afternoon, Evening and Night.
 - `Route`: traveling path, combination of `From` and `To`.
 - `PercentageDiscount`.
+
 **Target encoding.** Created the new values `UserRate`, `From_Rate`, `To_Rate`, `Route_Rate` value, using Leave-One-Out Smoothed Rate on training set and classic Smoothed Rate on test set.
 
 
